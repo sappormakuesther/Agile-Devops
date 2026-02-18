@@ -5,6 +5,7 @@
    ======================================== */
 
 import './style.css';
+import { ScrollEngine } from './engine.js';
 
 // --- DOM Elements ---
 const setupPanel = document.getElementById('setup-panel');
@@ -25,14 +26,15 @@ const fontValue = document.getElementById('font-value');
 const mirrorBtn = document.getElementById('mirror-btn');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 
-// --- State ---
-const state = {
-  scrolling: false,
-  speed: 3,
+// --- State & Engine ---
+const engine = new ScrollEngine(display, () => {
+  // onStop callback (auto-stop)
+  playPauseBtn.querySelector('.btn-label').textContent = '▶';
+});
+
+const appState = {
   fontSize: 36,
   mirrored: false,
-  animFrameId: null,
-  lastTimestamp: 0,
   hasStartedOnce: false,
 };
 
@@ -49,54 +51,17 @@ startBtn.addEventListener('click', () => {
   if (!script) return;
 
   display.textContent = script;
-  display.style.fontSize = state.fontSize + 'px';
+  display.style.fontSize = appState.fontSize + 'px';
 
   setupPanel.classList.remove('active');
   teleprompterPanel.classList.add('active');
   controlBar.classList.add('visible');
 
   display.scrollTop = 0;
-  state.hasStartedOnce = false;
+  appState.hasStartedOnce = false;
 
   triggerCountdown();
 });
-
-// ========================================
-// US-02: Auto-Scrolling Engine
-// ========================================
-
-function startScrolling() {
-  if (state.scrolling) return;
-  state.scrolling = true;
-  state.lastTimestamp = performance.now();
-  playPauseBtn.querySelector('.btn-label').textContent = '⏸';
-  state.animFrameId = requestAnimationFrame(scrollLoop);
-}
-
-function stopScrolling() {
-  state.scrolling = false;
-  playPauseBtn.querySelector('.btn-label').textContent = '▶';
-  if (state.animFrameId) {
-    cancelAnimationFrame(state.animFrameId);
-    state.animFrameId = null;
-  }
-}
-
-function scrollLoop(timestamp) {
-  if (!state.scrolling) return;
-
-  const delta = timestamp - state.lastTimestamp;
-  state.lastTimestamp = timestamp;
-
-  display.scrollTop += state.speed * (delta / 16);
-
-  if (display.scrollTop >= display.scrollHeight - display.clientHeight) {
-    stopScrolling();
-    return;
-  }
-
-  state.animFrameId = requestAnimationFrame(scrollLoop);
-}
 
 // ========================================
 // US-08: Countdown Timer
@@ -122,8 +87,11 @@ function triggerCountdown() {
     } else {
       clearInterval(interval);
       countdownOverlay.classList.remove('active');
-      state.hasStartedOnce = true;
-      startScrolling();
+      appState.hasStartedOnce = true;
+
+      // Update UI to playing state
+      playPauseBtn.querySelector('.btn-label').textContent = '⏸';
+      engine.start();
     }
   }, 800);
 }
@@ -133,27 +101,31 @@ function triggerCountdown() {
 // ========================================
 
 playPauseBtn.addEventListener('click', () => {
-  if (state.scrolling) {
-    stopScrolling();
+  if (engine.state.scrolling) {
+    engine.stop();
+    playPauseBtn.querySelector('.btn-label').textContent = '▶';
   } else {
-    if (!state.hasStartedOnce) {
+    if (!appState.hasStartedOnce) {
       triggerCountdown();
     } else {
-      startScrolling();
+      playPauseBtn.querySelector('.btn-label').textContent = '⏸';
+      engine.start();
     }
   }
 });
 
 resetBtn.addEventListener('click', () => {
-  stopScrolling();
+  engine.stop();
+  playPauseBtn.querySelector('.btn-label').textContent = '▶';
+
   display.scrollTop = 0;
   display.classList.remove('mirror');
-  state.mirrored = false;
+  appState.mirrored = false;
   mirrorBtn.classList.remove('active');
   controlBar.classList.remove('visible');
   teleprompterPanel.classList.remove('active');
   setupPanel.classList.add('active');
-  state.hasStartedOnce = false;
+  appState.hasStartedOnce = false;
 });
 
 // ========================================
@@ -161,17 +133,21 @@ resetBtn.addEventListener('click', () => {
 // ========================================
 
 speedSlider.addEventListener('input', () => {
-  state.speed = Number(speedSlider.value);
-  speedValue.textContent = speedSlider.value;
+  const val = Number(speedSlider.value);
+  engine.setSpeed(val);
+  speedValue.textContent = val;
 });
+// Init speed
+engine.setSpeed(Number(speedSlider.value));
+
 
 // ========================================
 // US-05: Font Size Control
 // ========================================
 
 fontSlider.addEventListener('input', () => {
-  state.fontSize = Number(fontSlider.value);
-  display.style.fontSize = state.fontSize + 'px';
+  appState.fontSize = Number(fontSlider.value);
+  display.style.fontSize = appState.fontSize + 'px';
   fontValue.textContent = fontSlider.value + 'px';
 });
 
@@ -180,9 +156,9 @@ fontSlider.addEventListener('input', () => {
 // ========================================
 
 mirrorBtn.addEventListener('click', () => {
-  state.mirrored = !state.mirrored;
-  display.classList.toggle('mirror', state.mirrored);
-  mirrorBtn.classList.toggle('active', state.mirrored);
+  appState.mirrored = !appState.mirrored;
+  display.classList.toggle('mirror', appState.mirrored);
+  mirrorBtn.classList.toggle('active', appState.mirrored);
 });
 
 // ========================================
