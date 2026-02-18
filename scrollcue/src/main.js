@@ -185,3 +185,20 @@ mirrorBtn.addEventListener('click', () => {
   mirrorBtn.classList.toggle('active', state.mirrored);
 });
 
+// ========================================
+// US-07: Fullscreen Mode
+// ========================================
+
+fullscreenBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.getElementById('app').requestFullscreen().catch(() => { });
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  fullscreenBtn.classList.toggle('active', !!document.fullscreenElement);
+  const label = fullscreenBtn.querySelector('.btn-label');
+  label.textContent = document.fullscreenElement ? '⊠' : '⛶';
+});
