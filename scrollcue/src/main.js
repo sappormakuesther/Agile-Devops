@@ -1,6 +1,7 @@
 /* ========================================
    ScrollCue — Main Application Logic
    Sprint 1: US-09, US-01, US-02
+   Sprint 2: US-03, US-04, US-05, US-06, US-07, US-08, US-10
    ======================================== */
 
 import './style.css';
@@ -16,6 +17,14 @@ const playPauseBtn = document.getElementById('play-pause-btn');
 const resetBtn = document.getElementById('reset-btn');
 const countdownOverlay = document.getElementById('countdown-overlay');
 
+// Sprint 2 elements
+const speedSlider = document.getElementById('speed-slider');
+const speedValue = document.getElementById('speed-value');
+const fontSlider = document.getElementById('font-slider');
+const fontValue = document.getElementById('font-value');
+const mirrorBtn = document.getElementById('mirror-btn');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+
 // --- State ---
 const state = {
   scrolling: false,
@@ -24,36 +33,31 @@ const state = {
   mirrored: false,
   animFrameId: null,
   lastTimestamp: 0,
-  hasStartedOnce: false, // tracks if we need countdown
+  hasStartedOnce: false,
 };
 
 // ========================================
 // US-01: Script Input
 // ========================================
 
-// Enable/disable Start button based on textarea content
 scriptInput.addEventListener('input', () => {
   startBtn.disabled = scriptInput.value.trim().length === 0;
 });
 
-// Start button → transition to teleprompter view
 startBtn.addEventListener('click', () => {
   const script = scriptInput.value.trim();
   if (!script) return;
 
-  // Inject script text into display
   display.textContent = script;
+  display.style.fontSize = state.fontSize + 'px';
 
-  // Switch panels
   setupPanel.classList.remove('active');
   teleprompterPanel.classList.add('active');
   controlBar.classList.add('visible');
 
-  // Reset scroll
   display.scrollTop = 0;
   state.hasStartedOnce = false;
 
-  // Auto-start with countdown
   triggerCountdown();
 });
 
@@ -84,10 +88,8 @@ function scrollLoop(timestamp) {
   const delta = timestamp - state.lastTimestamp;
   state.lastTimestamp = timestamp;
 
-  // Pixels per frame, normalized to ~60fps
   display.scrollTop += state.speed * (delta / 16);
 
-  // Stop at bottom
   if (display.scrollTop >= display.scrollHeight - display.clientHeight) {
     stopScrolling();
     return;
@@ -97,7 +99,7 @@ function scrollLoop(timestamp) {
 }
 
 // ========================================
-// Countdown Timer (part of US-02 flow)
+// US-08: Countdown Timer
 // ========================================
 
 function triggerCountdown() {
@@ -109,9 +111,8 @@ function triggerCountdown() {
     count--;
     if (count > 0) {
       countdownOverlay.textContent = count;
-      // Re-trigger animation
       countdownOverlay.classList.remove('active');
-      void countdownOverlay.offsetWidth; // force reflow
+      void countdownOverlay.offsetWidth;
       countdownOverlay.classList.add('active');
     } else if (count === 0) {
       countdownOverlay.textContent = 'Go!';
@@ -128,7 +129,7 @@ function triggerCountdown() {
 }
 
 // ========================================
-// Play / Pause / Reset Controls
+// US-04: Play / Pause / Reset
 // ========================================
 
 playPauseBtn.addEventListener('click', () => {
@@ -146,8 +147,41 @@ playPauseBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
   stopScrolling();
   display.scrollTop = 0;
+  display.classList.remove('mirror');
+  state.mirrored = false;
+  mirrorBtn.classList.remove('active');
   controlBar.classList.remove('visible');
   teleprompterPanel.classList.remove('active');
   setupPanel.classList.add('active');
   state.hasStartedOnce = false;
 });
+
+// ========================================
+// US-03: Speed Control
+// ========================================
+
+speedSlider.addEventListener('input', () => {
+  state.speed = Number(speedSlider.value);
+  speedValue.textContent = speedSlider.value;
+});
+
+// ========================================
+// US-05: Font Size Control
+// ========================================
+
+fontSlider.addEventListener('input', () => {
+  state.fontSize = Number(fontSlider.value);
+  display.style.fontSize = state.fontSize + 'px';
+  fontValue.textContent = fontSlider.value + 'px';
+});
+
+// ========================================
+// US-06: Mirror Mode
+// ========================================
+
+mirrorBtn.addEventListener('click', () => {
+  state.mirrored = !state.mirrored;
+  display.classList.toggle('mirror', state.mirrored);
+  mirrorBtn.classList.toggle('active', state.mirrored);
+});
+
