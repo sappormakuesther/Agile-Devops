@@ -115,13 +115,17 @@
 ## Retrospective *(to be filled after sprint completion)*
 
 ### What went well
-- *TBD*
+- Project scaffolding with Vite was fast and effective.
+- Dark mode design system provides a strong visual foundation.
+- Core scroll engine (`requestAnimationFrame`) is smooth and performant.
 
 ### What could be improved
-- *TBD*
+- CSS is currently in a single file; might need splitting if it grows.
+- Manual testing of scroll speeds is subjective; lacked automated verify.
 
 ### Action items
-- *TBD*
+- Monitor `style.css` size; refactor if it exceeds ~500 lines.
+- Research testing tools (Vitest) for future sprints.
 
 ---
 
