@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScrollCue — Web Teleprompter</title>
+  <meta name="description"
+    content="A simple, modern web teleprompter app. Paste your script and let it scroll hands-free." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ===== Setup Panel ===== -->
+    <section id="setup-panel" class="panel active">
+      <div class="setup-card">
+        <h1 class="logo">
+          <span class="logo-icon">📜</span> Scroll<span class="accent">Cue</span>
+        </h1>
+        <p class="tagline">Paste your script. Hit start. Read effortlessly.</p>
+        <textarea id="script-input" placeholder="Paste your script here…" spellcheck="false"></textarea>
+        <button id="start-btn" disabled>
+          <span class="btn-icon">▶</span> Start Teleprompter
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== Teleprompter View ===== -->
+    <section id="teleprompter-panel" class="panel">
+      <div id="teleprompter-display"></div>
+
+      <!-- Floating Control Bar -->
+      <div id="control-bar">
+        <button id="play-pause-btn" class="ctrl-btn" title="Play / Pause">
+          <span class="btn-label">▶</span>
+        </button>
+        <button id="reset-btn" class="ctrl-btn" title="Reset">
+          <span class="btn-label">⏹</span>
+        </button>
+
+        <span class="divider"></span>
+
+        <!-- Speed Control (US-03) -->
+        <div class="slider-group">
+          <label for="speed-slider">Speed</label>
+          <input type="range" id="speed-slider" min="1" max="10" value="3" />
+          <span id="speed-value" class="slider-value">3</span>
+        </div>
+
+        <!-- Font Size Control (US-05) -->
+        <div class="slider-group">
+          <label for="font-slider">Size</label>
+          <input type="range" id="font-slider" min="24" max="72" value="36" />
+          <span id="font-value" class="slider-value">36px</span>
+        </div>
+
+        <span class="divider"></span>
+
+        <!-- Mirror Mode (US-06) -->
+        <button id="mirror-btn" class="ctrl-btn" title="Mirror Mode">
+          <span class="btn-label">🪞</span>
+        </button>
+
+        <!-- Fullscreen Mode (US-07) -->
+        <button id="fullscreen-btn" class="ctrl-btn" title="Fullscreen">
+          <span class="btn-label">⛶</span>
+        </button>
+      </div>
+
+      <!-- Countdown Overlay -->
+      <div id="countdown-overlay"></div>
+    </section>
+
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
